@@ -50,6 +50,21 @@ func initSlice(reader *bufio.Reader) []int {
 	return slice
 }
 
+func majorOrMinor(address *string, reader *bufio.Reader, operation *string) {
+	var reply int
+	client, err := rpc.Dial("tcp", *address)
+	checkError(err, "Dialing")
+	if err != nil {
+		return
+	}
+	defer client.Close()
+	slice := initSlice(reader)
+	if err = client.Call(*operation, slice, &reply); err == nil {
+		fmt.Printf("%v value in %v is %d\n", *operation, slice, reply)
+	}
+	checkError(err, fmt.Sprintf("%v Call", *operation))
+}
+
 func printMenu() {
 	fmt.Printf("\t\tMenu\n")
 	fmt.Printf("1. Add\n")
@@ -102,19 +117,11 @@ func main() {
 				}
 				checkError(err, "Math.Divide Call")
 			case 3:
-				var reply int
-				slice := initSlice(reader)
-				if err = client.Call("Math.Major", slice, &reply); err == nil {
-					fmt.Printf("Math major value in %v is %d\n", slice, reply)
-				}
-				checkError(err, "Math.Major Call")
+				operation := "Math.Major"
+				majorOrMinor(&service, reader, &operation)
 			case 4:
-				var reply int
-				slice := initSlice(reader)
-				if err = client.Call("Math.Minor", slice, &reply); err == nil {
-					fmt.Printf("Math minor value in %v is %d\n", slice, reply)
-				}
-				checkError(err, "Math.Major Call")
+				operation := "Math.Minor"
+				majorOrMinor(&service, reader, &operation)
 			case 5:
 				fmt.Printf("Good Bye!\n")
 				break out
@@ -122,5 +129,6 @@ func main() {
 				fmt.Printf("Invalid Option\n")
 			}
 		}
+		defer client.Close()
 	}
 }
