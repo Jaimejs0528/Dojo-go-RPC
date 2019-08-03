@@ -57,6 +57,7 @@ func majorOrMinor(address *string, reader *bufio.Reader, operation *string) {
 	if err != nil {
 		return
 	}
+	defer client.Close()
 	slice := initSlice(reader)
 	if err = client.Call(*operation, slice, &reply); err == nil {
 		fmt.Printf("%v value in %v is %d\n", *operation, slice, reply)
@@ -128,5 +129,6 @@ func main() {
 				fmt.Printf("Invalid Option\n")
 			}
 		}
+		defer client.Close()
 	}
 }
